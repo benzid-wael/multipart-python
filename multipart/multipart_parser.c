@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
+#include "iso646.h"
 
 static void multipart_log(const char * format, ...)
 {
@@ -24,7 +26,7 @@ static void multipart_log(const char * format, ...)
 #define NOTIFY_CB(FOR)                                                 \
 do {                                                                   \
   if (p->settings->on_##FOR) {                                     \
-    if (p->settings->on_##FOR(p) != 0) {                           \
+    if (p->settings->on_##FOR(p->data) != 0) {                           \
       return i;                                                        \
     }                                                                  \
   }                                                                    \
@@ -33,7 +35,7 @@ do {                                                                   \
 #define EMIT_DATA_CB(FOR, ptr, len)                                    \
 do {                                                                   \
   if (p->settings->on_##FOR) {                                         \
-    if (p->settings->on_##FOR(p, ptr, len) != 0) {                     \
+    if (p->settings->on_##FOR(p->data, ptr, len) != 0) {                     \
       return i;                                                        \
     }                                                                  \
   }                                                                    \
@@ -80,18 +82,22 @@ enum state {
 multipart_parser* multipart_parser_init
     (const char *boundary, const multipart_parser_settings* settings) {
 
+  const int boundaryLength = strlen(boundary);
   multipart_parser* p = malloc(sizeof(multipart_parser) +
-                               strlen(boundary) +
-                               strlen(boundary) + 9);
+                               boundaryLength +
+                               boundaryLength + 9);
 
-  strcpy(p->multipart_boundary, boundary);
-  p->boundary_length = strlen(boundary);
-  
-  p->lookbehind = (p->multipart_boundary + p->boundary_length + 1);
+  if(p)
+  {
+	  strcpy(p->multipart_boundary, boundary);
+	  p->boundary_length = boundaryLength;
+	  
+	  p->lookbehind = (p->multipart_boundary + p->boundary_length + 1);
 
-  p->index = 0;
-  p->state = s_start;
-  p->settings = settings;
+	  p->index = 0;
+	  p->state = s_start;
+	  p->settings = settings;
+  }
 
   return p;
 }
@@ -108,10 +114,11 @@ void *multipart_parser_get_data(multipart_parser *p) {
     return p->data;
 }
 
+//Returns number of bytes parsed
 size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len) {
   size_t i = 0;
   size_t mark = 0;
-  char c, cl;
+  char c;
   int is_last = 0;
 
   while(!is_last) {
@@ -126,7 +133,9 @@ size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len
       /* fallthrough */
       case s_start_boundary:
         multipart_log("s_start_boundary");
+        //Check to see if one past the end of the boundary
         if (p->index == p->boundary_length) {
+          //If not properly terminated, then return immediately
           if (c != CR) {
             return i;
           }
@@ -170,13 +179,14 @@ size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len
           break;
         }
 
-        cl = tolower(c);
-        if (cl < 'a' || cl > 'z') {
+        if (not isalpha(c) ) {
           multipart_log("invalid character in header name");
           return i;
         }
         if (is_last)
+        {
             EMIT_DATA_CB(header_field, buf + mark, (i - mark) + 1);
+        }
         break;
 
       case s_headers_almost_done:
@@ -205,7 +215,9 @@ size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len
           p->state = s_header_value_almost_done;
         }
         if (is_last)
+        {
             EMIT_DATA_CB(header_value, buf + mark, (i - mark) + 1);
+        }
         break;
 
       case s_header_value_almost_done:
@@ -213,6 +225,7 @@ size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len
         if (c != LF) {
           return i;
         }
+        NOTIFY_CB(header_value_end);
         p->state = s_header_field_start;
         break;
 

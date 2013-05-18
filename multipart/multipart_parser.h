@@ -17,14 +17,15 @@ typedef struct multipart_parser multipart_parser;
 typedef struct multipart_parser_settings multipart_parser_settings;
 typedef struct multipart_parser_state multipart_parser_state;
 
-typedef int (*multipart_data_cb) (multipart_parser*, const char *at, size_t length);
-typedef int (*multipart_notify_cb) (multipart_parser*);
+typedef int (*multipart_data_cb) (void*, const char *at, size_t length);
+typedef int (*multipart_notify_cb) (void*);
 
 struct multipart_parser_settings {
   multipart_data_cb on_header_field;
   multipart_data_cb on_header_value;
   multipart_data_cb on_part_data;
 
+  multipart_notify_cb on_header_value_end;
   multipart_notify_cb on_part_data_begin;
   multipart_notify_cb on_headers_complete;
   multipart_notify_cb on_part_data_end;
