@@ -108,7 +108,6 @@ static void Parser_dealloc(multipart_Parser * self)
   
 static bool queuePush(multipart_Parser * const self)
 {
-	
 	self->currentIteratorPair += 1;
 	//TODO check for exceeding bounds of queue
 	
@@ -120,11 +119,24 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
-	PyObject * const headerIterator = PyObject_Call(generatorObject,NULL,NULL);
-	PyObject * const bodyIterator = PyObject_Call(generatorObject,NULL,NULL);
+	PyObject * const read = PyObject_GetAttrString((PyObject*)self,"read");
+	
+	if(not read)
+	{
+		PyErr_SetString(PyExc_NameError,"Could not find self.read");
+		return false;
+	}
+	
+	PyObject * const argument = PyTuple_Pack(1,read);
+	Py_DECREF(read);
+	
+	PyObject * const headerIterator = PyObject_Call(generatorObject,argument,NULL);
+	PyObject * const bodyIterator = PyObject_Call(generatorObject,argument,NULL);
+	Py_DECREF(argument);
+	Py_DECREF(generatorObject);
 	
 	if(not headerIterator or not bodyIterator)
-	{
+	{	
 		Py_XDECREF(headerIterator);
 		Py_XDECREF(bodyIterator);
 		
@@ -149,7 +161,6 @@ static int multipart_Parser_on_header_field(void * actor, const char * data, siz
 	//Check for this being headers on a new part
 	if(self->headersComplete)
 	{
-		printf("new part\n");
 		if(not queuePush(self))
 		{
 			return 1;
@@ -157,8 +168,7 @@ static int multipart_Parser_on_header_field(void * actor, const char * data, siz
 		self->headersComplete = false;
 	}
 	
-	
-	//Calculate the requried size after adding the new data
+	//Calculate the required size after adding the new data
 	const int requiredSize = length + self->headerFieldLength + 1;
 	
 	//Reallocate memory if neccessary
@@ -426,15 +436,23 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 typedef struct
 {
 	PyObject_HEAD
-	PyObject * actor;
-	iternextfunc callback;
+	PyObject * callback;
 }multipart_Generator;
 
 static PyMethodDef Generator_methods[] = { {NULL} };
 static PyMemberDef Generator_members[] = { {NULL} };
 
-static int Generator_init(PyTypeObject * self, PyObject *args, PyObject *kwds)
+static int Generator_init(multipart_Generator * self, PyObject *args, PyObject *kwds)
 {
+	PyObject * callback;
+	static char * kwlist[] = {"callback",NULL};
+	if( not PyArg_ParseTupleAndKeywords(args,kwds,"O",kwlist,&callback) )
+	{
+		return -1;
+	}
+	
+	self->callback = callback;
+	
 	return 0;
 }
 
@@ -459,7 +477,7 @@ static PyTypeObject multipart_GeneratorType = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER,        /*tp_flags*/
+    Py_TPFLAGS_HAVE_CLASS | Py_TPFLAGS_HAVE_ITER,        /*tp_flags*/
     "Generator object",           /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
