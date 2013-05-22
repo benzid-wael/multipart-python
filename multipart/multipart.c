@@ -111,6 +111,7 @@ static bool queuePush(multipart_Parser * const self)
 	self->currentIteratorPair += 1;
 	//TODO check for exceeding bounds of queue
 	
+	//Retrieve the generator constructor
 	PyObject * const generatorObject = PyObject_GetAttrString(multipartModule,"Generator");
 	
 	if(not generatorObject)
@@ -119,6 +120,7 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
+	//Retrieve this objects own read method
 	PyObject * const read = PyObject_GetAttrString((PyObject*)self,"read");
 	
 	if(not read)
@@ -127,6 +129,9 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
+	
+	//Construct two iterators, both being passed the read method
+	//of this object
 	PyObject * const argument = PyTuple_Pack(1,read);
 	Py_DECREF(read);
 	
@@ -146,6 +151,9 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
+	//These iterators are not placed into the queue. They are now
+	//the current set of iterators into which the parser pushes
+	//data.
 	self->iteratorQueue[self->currentIteratorPair*2] = headerIterator;
 	self->iteratorQueue[self->currentIteratorPair*2+1] = bodyIterator;
 	
@@ -195,6 +203,8 @@ static int multipart_Parser_on_header_value(void * actor, const char * data, siz
 	
 	multipart_Parser * const self = actor;
 	
+	//Append this to the existing buffer, enlarging the buffer 
+	//if need be
 	const int requiredSize = length + self->headerValueLength + 1;
 	
 	if(requiredSize > self->headerValueSize)
@@ -231,6 +241,8 @@ static int multipart_Parser_on_header_value_end(void * actor)
 	self->headerFieldInProgress[self->headerFieldLength] = '\0';
 	self->headerValueInProgress[self->headerValueLength] = '\0';
 	
+	//Construct two string objects, one for the field and one
+	//for the value
 	PyObject * const field = PyString_FromString(self->headerFieldInProgress);
 	PyObject * const value = PyString_FromString(self->headerValueInProgress);
 	
@@ -242,6 +254,8 @@ static int multipart_Parser_on_header_value_end(void * actor)
 		return 1;
 	}
 	
+	//Pack both into a tuple that will have the form of 
+	// ( Name, Value)
 	PyObject * const tuple = PyTuple_Pack(2,field,value);
 	Py_DECREF(field);
 	Py_DECREF(value);
@@ -252,6 +266,8 @@ static int multipart_Parser_on_header_value_end(void * actor)
 		return 1;
 	}
 	
+	//Get the push method of the generator which is the current destination
+	//for headers
 	PyObject * const push = PyObject_GetAttrString(self->iteratorQueue[self->currentIteratorPair*2],"push");
 	
 	if(not push)
@@ -261,6 +277,7 @@ static int multipart_Parser_on_header_value_end(void * actor)
 		return 1;
 	}
 	
+	//Pass the tuple object to the generator
 	PyObject * const result = PyObject_Call(push,tuple,NULL);
 	Py_DECREF(tuple);
 	Py_DECREF(push);
@@ -272,6 +289,8 @@ static int multipart_Parser_on_header_value_end(void * actor)
 	
 	Py_DECREF(result);
 	
+	//This header is now complete. The length of the buffers is now
+	//zero'd.
 	self->headerValueLength = 0;
 	self->headerFieldLength = 0;
 	return 0;
@@ -283,6 +302,7 @@ static int multipart_Parser_on_headers_complete(void * actor)
 	multipart_Parser * const self = actor;
 	self->headersComplete = true;
 	
+	//Get the done method from the current header generator
 	PyObject * const done = PyObject_GetAttrString(self->iteratorQueue[self->currentIteratorPair*2],"done");
 	
 	if(not done)
@@ -291,8 +311,9 @@ static int multipart_Parser_on_headers_complete(void * actor)
 		return 1;
 	}
 	
+	//Signal to the header generator that no more 
+	//headers are coming
 	PyObject * const emptyTuple = PyTuple_Pack(0);
-	
 	PyObject * const result = PyObject_Call(done,emptyTuple,NULL);
 	Py_DECREF(result);
 	Py_DECREF(emptyTuple);
@@ -308,7 +329,6 @@ static int multipart_Parser_on_headers_complete(void * actor)
 static int multipart_Parser_on_part_data_end(void * actor)
 {
 	multipart_Parser * const self = actor;
-	//self->headersComplete = false;
 	
 	return 0;
 }
@@ -361,6 +381,8 @@ static int Parser_init(multipart_Parser * const self, PyObject * args, PyObject 
 		return -1;
 	}
 	
+	//Extract from the file input argument a method which can be used
+	//as an iterator
 	self->readIterator = PyObject_GetIter(fin);
 	
 	if(not self->readIterator) 
@@ -369,6 +391,7 @@ static int Parser_init(multipart_Parser * const self, PyObject * args, PyObject 
 		return -1;
 	}
 	
+	//Construct the parser with the provided boundary
 	self->parser = multipart_parser_init(boundary,&callbackRegistry);
 	if( not self->parser )
 	{
@@ -376,8 +399,11 @@ static int Parser_init(multipart_Parser * const self, PyObject * args, PyObject 
 		return -1;
 	}
 	
+	//Pass the parser a pointer to this object. It passes it back as a
+	//the first argument to all the callbacks 
 	multipart_parser_set_data(self->parser,(void*)self);
 	
+	//Build the queue used for the iterators
 	if(not allocateIteratorQueue(self))
 	{
 		return -1;
@@ -395,13 +421,17 @@ static PyObject* Parser_iter(PyObject * self)
 
 static PyObject* Parser_read(multipart_Parser * const self, PyObject * unused0, PyObject * unused1)
 {
+	//Retrieve bytes from the underlying data stream.
+	//In this case, an iterator
 	PyObject * const i = PyIter_Next(self->readIterator);
 	
+	//If the iterator returns NULL, then no more data is available.
 	if(i == NULL)
 	{
 		Py_RETURN_NONE;
 	}
 	
+	//Treat the returned object as just bytes
 	PyObject * const bytes = PyObject_Bytes(i);
 	Py_DECREF(i);
 	
@@ -412,6 +442,7 @@ static PyObject* Parser_read(multipart_Parser * const self, PyObject * unused0, 
 		
 	}
 	
+	//Extract from the bytes the raw data
 	char const * raw;
 	Py_ssize_t length;
 	
@@ -422,8 +453,13 @@ static PyObject* Parser_read(multipart_Parser * const self, PyObject * unused0, 
 		return NULL;
 	}
 
+	//Pass the raw data to the parser
 	const size_t result = multipart_parser_execute(self->parser,raw,length) ;
+	//Add the bytes parsed to the count
 	self->bytesParsed += result;
+	
+	//The parser returns the number of bytes parsed. It not all bytes
+	//are parsed, then an error occurred.
 	if( length != result )
 	{
 		char errmsg[64];
@@ -445,11 +481,13 @@ static PyObject* Parser_read(multipart_Parser * const self, PyObject * unused0, 
 static PyObject* Parser_iternext(multipart_Parser * const self)
 {
 	
+	//If there exists no more data then return immediately
 	if(self->dataComplete)
 	{
 		return NULL;
 	}
 
+	//Retrieve this objects read method
 	PyObject * const read = PyObject_GetAttrString((PyObject*)self,"read");
 	
 	if(not read)
@@ -464,14 +502,16 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 		return NULL;
 	}
 	
-	//Check to see if the iterator pair being returned is getting ahead
-	//of the iterator pair being populated
 	
 	PyObject * const emptyTuple = PyTuple_New(0);
 	
+	//Check to see if the iterator pair being returned is getting ahead
+	//of the iterator pair being populated. This cannot be allowed
+	//to happen.
 	while(self->outgoingIteratorPair > self->currentIteratorPair)
 	{
 		printf("Parser_iternext\n");
+		//If there is no more data, then return immediately
 		if(self->dataComplete)
 		{
 			Py_DECREF(emptyTuple);
@@ -479,8 +519,10 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 			return NULL;
 		}
 
+		//Call this objects read method. This does not return a 
+		//meaningful value (just None) but does update all of the internal
+		//values being checked here.
 		PyObject * const callresult = PyObject_Call(read,emptyTuple,NULL);
-		
 		if(not callresult)
 		{
 			Py_DECREF(emptyTuple);
@@ -494,6 +536,9 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 	Py_DECREF(read);
 	Py_DECREF(emptyTuple);
 	
+	//Build a tuple of the current set of iterators that should be exposed
+	//This tuple is of the form
+	// (Headers, Body)
 	PyObject * retval = PyTuple_Pack(2,self->iteratorQueue[self->outgoingIteratorPair*2],self->iteratorQueue[self->outgoingIteratorPair*2+1]);
 	
 	if(not retval)
