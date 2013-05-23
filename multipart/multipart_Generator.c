@@ -85,7 +85,6 @@ static void Generator_dealloc(multipart_Generator * self)
 }
 static PyObject * Generator_done(multipart_Generator * self, PyObject *args, PyObject *kwds)
 {
-	printf("Generator_done\n");
 	self->done = true;
 	Py_RETURN_NONE;
 }
