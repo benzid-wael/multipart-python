@@ -55,6 +55,24 @@ static PyObject * Generator_iternext(multipart_Generator * const self)
 
 }
 
+static PyObject* Generator_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
+{
+	multipart_Generator * self = (multipart_Generator*)type->tp_alloc(type,0);
+	
+	if(self!=NULL)
+	{
+		self->callback = NULL;
+		
+		self->queueLength = 0;
+		self->queueRead = 0;
+		self->done = false;
+		self->queue = NULL;
+		
+	}
+	
+	return (PyObject*)self;
+}
+
 static void Generator_dealloc(multipart_Generator * self)
 {
 	for(size_t i = self->queueRead; i < self->queueLength; ++i)
@@ -63,7 +81,7 @@ static void Generator_dealloc(multipart_Generator * self)
 	}
 	
 	PyMem_Free(self->queue);
-	Py_DECREF(self->callback);
+	Py_XDECREF(self->callback);
 }
 static PyObject * Generator_done(multipart_Generator * self, PyObject *args, PyObject *kwds)
 {
@@ -92,7 +110,7 @@ static PyObject * Generator_push(multipart_Generator * self, PyObject *args, PyO
 	
 	const size_t newLength = self->queueLength +1;
 	
-	if(newLength > self->queueSize)
+	if(newLength >= self->queueSize)
 	{
 		if(self->queueRead != 0)
 		{
@@ -106,7 +124,7 @@ static PyObject * Generator_push(multipart_Generator * self, PyObject *args, PyO
 			//Allocate new memory for pointers
 			const int NEW_SIZE = self->queueSize *2;
 			const int NEW_SIZE_BYTES = sizeof(PyObject*)*NEW_SIZE;
-			
+			printf("realloc\n");
 			PyObject ** const replacement = PyMem_Realloc(self->queue,NEW_SIZE_BYTES);
 
 			if(not replacement)
@@ -137,7 +155,7 @@ static int Generator_init(multipart_Generator * self, PyObject *args, PyObject *
 {
 	PyObject * callback;
 	static char * kwlist[] = {"callback",NULL};
-	if( not PyArg_ParseTupleAndKeywords(args,kwds,"O",kwlist,&callback) )
+	if( 0 == PyArg_ParseTupleAndKeywords(args,kwds,"O",kwlist,&callback) )
 	{
 		return -1;
 	}
@@ -145,20 +163,19 @@ static int Generator_init(multipart_Generator * self, PyObject *args, PyObject *
 	self->callback = callback;
 	Py_INCREF(self->callback);
 	
+	
 	static const int STARTING_SIZE = 4;
 	const int SIZE_BYTES = sizeof(PyObject*)*STARTING_SIZE;
+
+	self->queueSize = STARTING_SIZE;
+
 	self->queue = PyMem_Malloc(SIZE_BYTES);
 	if(not self->queue)
 	{
 		PyErr_NoMemory();
-		return -1;
+		return NULL;
 	}
 	bzero(self->queue,SIZE_BYTES);
-	
-	self->queueSize = STARTING_SIZE;
-	self->queueLength = 0;
-	self->queueRead = 0;
-	self->done = false;
 	
 	return 0;
 }
@@ -168,7 +185,7 @@ static int Generator_init(multipart_Generator * self, PyObject *args, PyObject *
 PyTypeObject multipart_GeneratorType = {
 	PyObject_HEAD_INIT(NULL)
 	0,                         /*ob_size*/
-    "multipart.CallbackGenerator",             /*tp_name*/
+    "multipart.Generator",             /*tp_name*/
     sizeof(multipart_Generator), /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)Generator_dealloc          ,/*tp_dealloc*/
@@ -204,7 +221,7 @@ PyTypeObject multipart_GeneratorType = {
     0,                         /* tp_dictoffset */
     (initproc)Generator_init,      /* tp_init */
     0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    Generator_new,                 /* tp_new */
     0, /* tp_iter */
     0 //CallbackGenerator_iternext /* tp_iternext */
 };

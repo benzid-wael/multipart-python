@@ -109,8 +109,9 @@ static bool queuePush(multipart_Parser * const self)
 {
 	
 	self->currentIteratorPair += 1;
-	//TODO check for exceeding bounds of queue
 	
+	//Check for exceeding the bounds of the queue
+	//and enlarge it if necessary
 	if(self->currentIteratorPair >= self->iteratorQueueSizeInPairs)
 	{
 		const int NEW_SIZE = self->iteratorQueueSizeInPairs*2*2;
@@ -145,7 +146,6 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
-	
 	//Construct two iterators, both being passed the read method
 	//of this object
 	PyObject * const argument = PyTuple_Pack(1,read);
@@ -167,7 +167,7 @@ static bool queuePush(multipart_Parser * const self)
 		return false;
 	}
 	
-	//These iterators are not placed into the queue. They are now
+	//These iterators are placed into the queue. They are now
 	//the current set of iterators into which the parser pushes
 	//data.
 	self->iteratorQueue[self->currentIteratorPair*2] = headerIterator;
