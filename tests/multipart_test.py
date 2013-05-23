@@ -100,7 +100,7 @@ class TestMultipart(unittest.TestCase):
 				
 			self.assertTrue(chksum.hexdigest() == digest)
 			
-	def test_5(self):
+	def test_6(self):
 		digests = \
 		['e3fb78474a477c528d92d01d4fc85a04',# random0
 		'cd880b726e0a0dbd4237f10d15da46f4',

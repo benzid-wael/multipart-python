@@ -114,8 +114,8 @@ static bool queuePush(multipart_Parser * const self)
 	//and enlarge it if necessary
 	if(self->currentIteratorPair >= self->iteratorQueueSizeInPairs)
 	{
-		const int NEW_SIZE = self->iteratorQueueSizeInPairs*2*2;
-		const int NEW_SIZE_BYTES = sizeof(PyObject*)*NEW_SIZE;
+		const int NEW_SIZE = self->iteratorQueueSizeInPairs*2;
+		const int NEW_SIZE_BYTES = sizeof(PyObject*)*NEW_SIZE*2;
 		PyObject ** const replacement = PyMem_Realloc(self->iteratorQueue,NEW_SIZE_BYTES);
 		
 		if(not replacement)
@@ -172,6 +172,8 @@ static bool queuePush(multipart_Parser * const self)
 	//data.
 	self->iteratorQueue[self->currentIteratorPair*2] = headerIterator;
 	self->iteratorQueue[self->currentIteratorPair*2+1] = bodyIterator;
+	
+	self->iteratorQueueLengthInPairs += 1;
 	
 	return true;
 }
