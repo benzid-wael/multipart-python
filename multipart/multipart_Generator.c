@@ -30,7 +30,7 @@ static PyObject * Generator_iternext(multipart_Generator * const self)
 	{
 		if(self->done)
 		{
-			printf("Generator_iternext-done\n");
+			
 			return NULL;
 		}
 		
@@ -43,7 +43,7 @@ static PyObject * Generator_iternext(multipart_Generator * const self)
 		}
 		
 		Py_DECREF(result);
-		//printf("Generator_iternext\n");
+		
 	}
 	Py_DECREF(emptyTuple);
 	
@@ -124,7 +124,7 @@ static PyObject * Generator_push(multipart_Generator * self, PyObject *args, PyO
 			//Allocate new memory for pointers
 			const int NEW_SIZE = self->queueSize *2;
 			const int NEW_SIZE_BYTES = sizeof(PyObject*)*NEW_SIZE;
-			printf("realloc\n");
+			
 			PyObject ** const replacement = PyMem_Realloc(self->queue,NEW_SIZE_BYTES);
 
 			if(not replacement)

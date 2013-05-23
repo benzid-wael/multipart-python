@@ -96,10 +96,10 @@ static void Parser_dealloc(multipart_Parser * self)
 	
 	Py_XDECREF(self->readIterator);
 	
-	for(size_t i = 0;i < self->iteratorQueueLengthInPairs ; i+=2)
+	for(size_t i = 0;i < self->iteratorQueueLengthInPairs ; i++)
 	{
-		Py_XDECREF(self->iteratorQueue[i]);
-		Py_XDECREF(self->iteratorQueue[i+1]);
+		Py_XDECREF(self->iteratorQueue[i*2]);
+		Py_XDECREF(self->iteratorQueue[i*2+1]);
 	}
 	
 	PyMem_Free(self->iteratorQueue);
@@ -178,7 +178,7 @@ static bool queuePush(multipart_Parser * const self)
   
 static int multipart_Parser_on_header_field(void * actor, const char * data, size_t length)
 {
-	printf("header field %zu bytes:%.*s\n",length,(int)length,data);
+	
 	multipart_Parser * const self = actor;
 	
 	//Check for this being headers on a new part
@@ -215,7 +215,7 @@ static int multipart_Parser_on_header_field(void * actor, const char * data, siz
 
 static int multipart_Parser_on_header_value(void * actor, const char * data, size_t length)
 {
-	printf("header value %zu bytes:%.*s\n",length,(int)length,data);
+
 	
 	multipart_Parser * const self = actor;
 	
@@ -242,7 +242,7 @@ static int multipart_Parser_on_header_value(void * actor, const char * data, siz
 
 static int multipart_Parser_on_part_data(void * actor , const char * data, size_t length)
 {
-	printf("part data %zu bytes:%.*s\n",length,(int)length,data);
+	
 	
 	multipart_Parser * const self = actor;
 	
@@ -292,10 +292,8 @@ static int multipart_Parser_on_part_data(void * actor , const char * data, size_
 
 static int multipart_Parser_on_header_value_end(void * actor)
 {
-	printf("header_value_end\n");
+	
 	multipart_Parser * const self = actor;
-	printf("%.*s=%.*s\n",(int)self->headerFieldLength,self->headerFieldInProgress,
-	(int)self->headerValueLength,self->headerValueInProgress);
 	
 	//Null terminate both buffers
 	self->headerFieldInProgress[self->headerFieldLength] = '\0';
@@ -358,7 +356,7 @@ static int multipart_Parser_on_header_value_end(void * actor)
 
 static int multipart_Parser_on_headers_complete(void * actor)
 {
-	printf("on_headers_complete\n");
+	
 	multipart_Parser * const self = actor;
 	self->headersComplete = true;
 	
@@ -594,7 +592,7 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 	//to happen.
 	while(self->outgoingIteratorPair > self->currentIteratorPair)
 	{
-		printf("Parser_iternext\n");
+		
 		//If there is no more data, then return immediately
 		if(self->dataComplete)
 		{
