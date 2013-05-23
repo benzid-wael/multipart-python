@@ -107,6 +107,7 @@ static void Parser_dealloc(multipart_Parser * self)
   
 static bool queuePush(multipart_Parser * const self)
 {
+	
 	self->currentIteratorPair += 1;
 	//TODO check for exceeding bounds of queue
 	
@@ -226,6 +227,50 @@ static int multipart_Parser_on_header_value(void * actor, const char * data, siz
 static int multipart_Parser_on_part_data(void * actor , const char * data, size_t length)
 {
 	printf("part data %zu bytes:%.*s\n",length,(int)length,data);
+	
+	multipart_Parser * const self = actor;
+	
+	PyObject * const bytes = PyString_FromStringAndSize(data,(Py_ssize_t)length);
+	
+	if(not bytes)
+	{
+		PyErr_NoMemory();
+		return 1;
+	}
+	
+	//Pack into a tuple
+	PyObject * const tuple = PyTuple_Pack(1,bytes);
+	Py_DECREF(bytes);
+	
+	if(not tuple)
+	{
+		PyErr_NoMemory();
+		return 1;
+	}
+	
+	//Get the push method of the generator which is the current destination
+	//for headers
+	PyObject * const push = PyObject_GetAttrString(self->iteratorQueue[self->currentIteratorPair*2+1],"push");
+	
+	if(not push)
+	{
+		PyErr_SetString(PyExc_NameError,"Cannot find Generator.push");
+		Py_DECREF(tuple);
+		return 1;
+	}
+	
+	//Pass the tuple object to the generator
+	PyObject * const result = PyObject_Call(push,tuple,NULL);
+	Py_DECREF(tuple);
+	Py_DECREF(push);
+	
+	if(not result)
+	{
+		return 1;
+	}
+	
+	Py_DECREF(result);
+	
 	return 0;
 }
 
@@ -314,13 +359,14 @@ static int multipart_Parser_on_headers_complete(void * actor)
 	//headers are coming
 	PyObject * const emptyTuple = PyTuple_Pack(0);
 	PyObject * const result = PyObject_Call(done,emptyTuple,NULL);
-	Py_DECREF(result);
+	Py_DECREF(done);
 	Py_DECREF(emptyTuple);
 	
 	if(not result)
 	{
 		return 1;
 	}
+	Py_DECREF(result);
 	
 	return 0;
 }
@@ -328,6 +374,30 @@ static int multipart_Parser_on_headers_complete(void * actor)
 static int multipart_Parser_on_part_data_end(void * actor)
 {
 	multipart_Parser * const self = actor;
+
+	
+	//Get the done method from the current data generator
+	PyObject * const done = PyObject_GetAttrString(self->iteratorQueue[self->currentIteratorPair*2+1],"done");
+	
+	if(not done)
+	{
+		PyErr_SetString(PyExc_NameError,"Cannot find Generator.done");
+		return 1;
+	}
+	
+	//Signal to the header generator that no more 
+	//headers are coming
+	PyObject * const emptyTuple = PyTuple_Pack(0);
+	PyObject * const result = PyObject_Call(done,emptyTuple,NULL);
+	Py_DECREF(done);
+	
+	Py_DECREF(emptyTuple);
+	
+	if(not result)
+	{
+		return 1;
+	}
+	Py_DECREF(result);
 	
 	return 0;
 }
@@ -537,7 +607,7 @@ static PyObject* Parser_iternext(multipart_Parser * const self)
 	
 	//Build a tuple of the current set of iterators that should be exposed
 	//This tuple is of the form
-	// (Headers, Body)
+	// (Headers, Data)
 	PyObject * retval = PyTuple_Pack(2,self->iteratorQueue[self->outgoingIteratorPair*2],self->iteratorQueue[self->outgoingIteratorPair*2+1]);
 	
 	if(not retval)

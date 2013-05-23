@@ -96,15 +96,23 @@ static PyObject * Generator_push(multipart_Generator * self, PyObject *args, PyO
 	{
 		if(self->queueRead != 0)
 		{
-			memmove(self->queue,self->queue + self->queueRead,self->queueLength - self->queueRead  * sizeof(PyObject*));
+			//Copy the remaining items on top of the ones that have already been dispensed with
+			memmove(self->queue,self->queue + self->queueRead,(self->queueLength - self->queueRead)  * sizeof(PyObject*));
 			self->queueLength -= self->queueRead;
 			self->queueRead = 0;
 		}
 		else
 		{
+			//Allocate new memory for pointers
 			self->queueSize *= 2;
 			const int NEW_SIZE = sizeof(PyObject*)*self->queueSize;
 			self->queue = PyMem_Realloc(self->queue,NEW_SIZE);
+			
+			if(not self->queue)
+			{
+				PyErr_NoMemory();
+				return NULL;
+			}
 		}
 	}
 	

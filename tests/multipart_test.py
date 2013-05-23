@@ -9,21 +9,25 @@ class TestMultipart(unittest.TestCase):
 		multipart.Parser('x',[])
 		
 	def test_0(self):
-		for headers,body in  multipart.Parser('------------------------------75766a6a01a6',open('tests/test0.txt')):
+		for headers,data in  multipart.Parser('------------------------------75766a6a01a6',open('tests/test0.txt')):
 			print 'begin headers'
 			for header in headers:
 				print 'HEADER=' + str(header)
 			print 'end headers'
+			for d in data:
+				print 'LEN=' + str(len(d))
 		
 	def test_1(self):
-		return
 		def wrapper(i):
 				for j in i:
 					for k in j:
 						yield k
-		for headers,body in multipart.Parser('------------------------------75766a6a01a6',wrapper(open('tests/test0.txt'))):
+		for headers,data in multipart.Parser('------------------------------75766a6a01a6',wrapper(open('tests/test0.txt'))):
 			for header in headers:
-				print header					
+				print 'HEADER=' + str(header)
+			print 'end headers'
+			for d in data:
+				print 'LEN=' + str(len(d))			
 		
 if __name__ == '__main__':
     unittest.main()
