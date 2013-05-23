@@ -111,6 +111,22 @@ static bool queuePush(multipart_Parser * const self)
 	self->currentIteratorPair += 1;
 	//TODO check for exceeding bounds of queue
 	
+	if(self->currentIteratorPair >= self->iteratorQueueSizeInPairs)
+	{
+		const int NEW_SIZE = self->iteratorQueueSizeInPairs*2*2;
+		const int NEW_SIZE_BYTES = sizeof(PyObject*)*NEW_SIZE;
+		PyObject ** const replacement = PyMem_Realloc(self->iteratorQueue,NEW_SIZE_BYTES);
+		
+		if(not replacement)
+		{
+			PyErr_NoMemory();
+			return false;
+		}
+		
+		self->iteratorQueue = replacement;
+		self->iteratorQueueSizeInPairs = NEW_SIZE;
+	}
+	
 	//Retrieve the generator constructor
 	PyObject * const generatorObject = PyObject_GetAttrString(multipartModule,"Generator");
 	
@@ -548,8 +564,7 @@ static PyObject* Parser_read(multipart_Parser * const self, PyObject * unused0, 
 }
 
 static PyObject* Parser_iternext(multipart_Parser * const self)
-{
-	
+{	
 	//If there exists no more data then return immediately
 	if(self->dataComplete)
 	{
