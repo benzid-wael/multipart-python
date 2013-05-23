@@ -61,7 +61,7 @@ static PyObject* Parser_new(PyTypeObject * type, PyObject * args, PyObject * kwd
 		self->headersComplete = true;
 		self->dataComplete = false;
 		self->readIterator = NULL;
-		static const int STARTING_SIZE = 2;
+		static const int STARTING_SIZE = 3;
 		self->headerFieldInProgress = PyMem_Malloc(STARTING_SIZE*sizeof(char));
 		self->headerFieldLength = 0;
 		self->headerFieldSize = STARTING_SIZE;
@@ -372,6 +372,13 @@ static int multipart_Parser_on_headers_complete(void * actor)
 	//Signal to the header generator that no more 
 	//headers are coming
 	PyObject * const emptyTuple = PyTuple_Pack(0);
+	
+	if(not emptyTuple)
+	{
+		PyErr_NoMemory();
+		return 1;
+	}
+	
 	PyObject * const result = PyObject_Call(done,emptyTuple,NULL);
 	Py_DECREF(done);
 	Py_DECREF(emptyTuple);
@@ -402,9 +409,15 @@ static int multipart_Parser_on_part_data_end(void * actor)
 	//Signal to the header generator that no more 
 	//headers are coming
 	PyObject * const emptyTuple = PyTuple_Pack(0);
+	
+	if(not emptyTuple)
+	{
+		PyErr_NoMemory();
+		return 1;
+	}
+	
 	PyObject * const result = PyObject_Call(done,emptyTuple,NULL);
 	Py_DECREF(done);
-	
 	Py_DECREF(emptyTuple);
 	
 	if(not result)

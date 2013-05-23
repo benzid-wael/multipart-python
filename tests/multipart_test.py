@@ -5,6 +5,11 @@ class TestMultipart(unittest.TestCase):
 	def setUp(self):
 		pass
 		
+	def test_badConstruction(self):
+		self.assertRaises(TypeError,multipart.Parser)
+		self.assertRaises(TypeError,multipart.Parser,'foo')
+		self.assertRaises(TypeError,multipart.Generator)
+		
 	def test_create(self):
 		multipart.Parser('x',[])
 		
@@ -94,6 +99,24 @@ class TestMultipart(unittest.TestCase):
 				chksum.update(d)
 				
 			self.assertTrue(chksum.hexdigest() == digest)
+			
+	def test_5(self):
+		digests = \
+		['e3fb78474a477c528d92d01d4fc85a04',# random0
+		'cd880b726e0a0dbd4237f10d15da46f4',
+		'37b51d194a7513e45b56f6524f2d51f2']
+		skip = False
+		for part,digest in zip(multipart.Parser('------------------------------6f84f6ecbb53',open('tests/test2.txt')),digests):
+			if skip:
+				skip = not Skip
+				continue
+				
+			_, data = part
+			chksum = hashlib.md5()
+			for d in data:
+				chksum.update(d)
+				
+			self.assertTrue(chksum.hexdigest() == digest)			
 
 		
 		

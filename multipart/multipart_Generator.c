@@ -23,14 +23,13 @@ static PyObject * Generator_iter(PyObject * const self)
 
 static PyObject * Generator_iternext(multipart_Generator * const self)
 {
-	
 	PyObject * const emptyTuple = PyTuple_New(0);
 	
 	while(self->queueRead == self->queueLength)
 	{
 		if(self->done)
 		{
-			
+			Py_DECREF(emptyTuple);
 			return NULL;
 		}
 		
