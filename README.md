@@ -1,18 +1,15 @@
 ## Multipart form data parser
 
-### Features
-* No dependencies
-* Works with chunks of a data - no need to buffer the whole request
-* Almost no internal buffering. Buffer size doesn't exceed the size of the boundary (~60-70 bytes)
+A python module of [Igor Afonov's](http://iafonov.github.com) [multipart-parser-c](https://github.com/iafonov/multipart-parser-c).
 
-Tested as part of [Cosmonaut](https://github.com/iafonov/cosmonaut) HTTP server.
+This module leverages the state machine written in C 
+code to provide a multipart/form-data parser to python code. 
+This module reads from any iterable object passed to it. It avoids the 
+need to read the entire structure into memory by returning iterators.
+This allows stream-to-disk or stream-to-database operations to be
+implemented in Python code only.
 
-Implementation based on [node-formidable](https://github.com/felixge/node-formidable) by [Felix Geisendörfer](https://github.com/felixge).
+Example usage parsing a saved body of a POST request and saving
+each part to disk is available in example/.
 
-Inspired by [http-parser](https://github.com/joyent/http-parser) by [Ryan Dahl](https://github.com/ry).
-
-### Contributors:
-* [Daniel T. Wagner](http://www.danieltwagner.de/)
-* [James McLaughlin](http://udp.github.com/)
-
-© 2012 [Igor Afonov](http://iafonov.github.com)
+				
