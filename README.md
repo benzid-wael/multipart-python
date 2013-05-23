@@ -1,4 +1,4 @@
-## Multipart form data parser
+## Multipart form data parser for python
 
 A python module of [Igor Afonov's](http://iafonov.github.com) [multipart-parser-c](https://github.com/iafonov/multipart-parser-c).
 
@@ -9,7 +9,9 @@ need to read the entire structure into memory by returning iterators.
 This allows stream-to-disk or stream-to-database operations to be
 implemented in Python code only.
 
-Example usage parsing a saved body of a POST request and saving
-each part to disk is available in example/.
+Example usage of parsing a POST request and saving
+each part to disk is shown in `example/saveUpload.py`. It starts
+an HTTP server on port 8080 of the localhost that saves all parts of the
+multipart upload to separate files on disk.
 
 				

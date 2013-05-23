@@ -14,14 +14,23 @@ def application(env,start_response):
 		start_response(msg,response_headers);
 		return msg
 
+	#The Content type header contains the boundary definition
+	#which must be passed to the parser
 	contentType = env['CONTENT_TYPE']
 	
 	magic = 'boundary='
 	offset = contentType.index(magic)
 	
+	#The RFC states that the boundary used includes two more dashes 
+	#than what is passed in the header
 	boundary = '--' + contentType[offset + len(magic):]
 	
 	for headers, data in multipart.Parser(boundary,env['wsgi.input']):
+		#headers is an iterator returning tuples of the form
+		# (name, value)
+		
+		#data is an iterator return chunks of data from this part
+		
 		global filenumber
 		filename = 'savedfile_%i' % filenumber
 		filenumber += 1
