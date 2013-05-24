@@ -20,7 +20,7 @@ class TestMultipart(unittest.TestCase):
 				print 'HEADER=' + str(header)
 			
 			for d in data:
-				print 'LEN=' + str(len(d))
+				pass#print 'LEN=' + str(len(d))
 		
 	def test_1(self):
 		def wrapper(i):
@@ -32,7 +32,7 @@ class TestMultipart(unittest.TestCase):
 				print 'HEADER=' + str(header)
 			
 			for d in data:
-				print 'LEN=' + str(len(d))			
+				pass#print 'LEN=' + str(len(d))			
 				
 	def test_3(self):
 		digests = \
@@ -52,7 +52,7 @@ class TestMultipart(unittest.TestCase):
 			
 			chksum = hashlib.md5()
 			for d in data:
-				print 'LEN=' + str(len(d))						
+				#print 'LEN=' + str(len(d))						
 				chksum.update(d)
 				
 			self.assertTrue(chksum.hexdigest() == digest)

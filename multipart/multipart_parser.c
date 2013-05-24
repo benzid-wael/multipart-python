@@ -170,6 +170,11 @@ size_t multipart_parser_execute(multipart_parser* p, const char *buf, size_t len
         }
 
         if (c == '-') {
+		  if(is_last)
+		  {
+			  EMIT_DATA_CB(header_field,buf + mark, (i - mark) +1 );
+		  }
+			
           break;
         }
 
