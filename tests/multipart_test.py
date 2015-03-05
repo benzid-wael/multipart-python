@@ -59,7 +59,7 @@ class TestMultipart(unittest.TestCase):
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
         boundary = '------------------------------8f9710048d91'
         for part, digest in zip(multipart.Parser(boundary,
-                                             open('tests/fake_stream1.txt')), digests):
+                                                 open('tests/fake_stream1.txt')), digests):
             headers, data = part
             for header in headers:
                 print 'HEADER=' + str(header)
@@ -94,7 +94,8 @@ class TestMultipart(unittest.TestCase):
 
         boundary = '------------------------------8f9710048d91'
         for part, digest in zip(
-                multipart.Parser(boundary, wrapper(open('tests/fake_stream1.txt'))),
+                multipart.Parser(
+                    boundary, wrapper(open('tests/fake_stream1.txt'))),
                 digests):
             headers, data = part
             for header in headers:
