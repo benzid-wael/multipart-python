@@ -25,7 +25,7 @@ class TestMultipart(unittest.TestCase):
                                               open('tests/test0.txt')):
 
             for header in headers:
-                print 'HEADER=' + str(header)
+                print('HEADER={}'.format(header))
 
             for d in data:
                 pass  # print 'LEN=' + str(len(d))
@@ -41,7 +41,7 @@ class TestMultipart(unittest.TestCase):
         for headers, data in multipart.Parser(boundary,
                                               open('tests/test0.txt')):
             for header in headers:
-                print 'HEADER=' + str(header)
+                print('HEADER={}'.format(header))
 
             for d in data:
                 pass  # print 'LEN=' + str(len(d))
@@ -98,7 +98,7 @@ class TestMultipart(unittest.TestCase):
                 digests):
             headers, data = part
             for header in headers:
-                print 'HEADER=' + str(header)
+                print('HEADER={}'.format(header))
 
             chksum = hashlib.md5()
             length = 0
@@ -107,7 +107,7 @@ class TestMultipart(unittest.TestCase):
                 chksum.update(d)
                 length += len(d)
 
-            print 'length: %i' % length
+            print('length: {}'.format(length))
             self.assertTrue(chksum.hexdigest() == digest)
 
     def test_4(self):
