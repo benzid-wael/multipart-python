@@ -58,8 +58,8 @@ class TestMultipart(unittest.TestCase):
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
         boundary = '------------------------------8f9710048d91'
-        for part, digest in multipart.Parser(boundary,
-                                             open('tests/test1.txt'), digests):
+        for part, digest in zip(multipart.Parser(boundary,
+                                             open('tests/test1.txt')), digests):
             headers, data = part
             for header in headers:
                 print 'HEADER=' + str(header)
