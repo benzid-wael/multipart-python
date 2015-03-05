@@ -20,7 +20,9 @@ class TestMultipart(unittest.TestCase):
         multipart.Parser('x', [])
 
     def test_0(self):
-        for headers, data in multipart.Parser('------------------------------75766a6a01a6', open('tests/test0.txt')):
+        boundary = '------------------------------75766a6a01a6'
+        for headers, data in multipart.Parser(boundary,
+                                              open('tests/test0.txt')):
 
             for header in headers:
                 print 'HEADER=' + str(header)
@@ -29,11 +31,15 @@ class TestMultipart(unittest.TestCase):
                 pass  # print 'LEN=' + str(len(d))
 
     def test_1(self):
+
         def wrapper(i):
             for j in i:
                 for k in j:
                     yield k
-        for headers, data in multipart.Parser('------------------------------75766a6a01a6', wrapper(open('tests/test0.txt'))):
+
+        boundary = '------------------------------75766a6a01a6'
+        for headers, data in multipart.Parser(boundary,
+                                              open('tests/test0.txt')):
             for header in headers:
                 print 'HEADER=' + str(header)
 
@@ -51,7 +57,9 @@ class TestMultipart(unittest.TestCase):
              '62250b57c1f145f2baf212df3dab4945',  # random6
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
-        for part, digest in zip(multipart.Parser('------------------------------8f9710048d91', open('tests/test1.txt')), digests):
+        boundary = '------------------------------8f9710048d91'
+        for part, digest in multipart.Parser(boundary,
+                                             open('tests/test1.txt'), digests):
             headers, data = part
             for header in headers:
                 print 'HEADER=' + str(header)
@@ -83,7 +91,11 @@ class TestMultipart(unittest.TestCase):
              '62250b57c1f145f2baf212df3dab4945',  # random6
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
-        for part, digest in zip(multipart.Parser('------------------------------8f9710048d91', wrapper(open('tests/test1.txt'))), digests):
+
+        boundary = '------------------------------8f9710048d91'
+        for part, digest in zip(
+                multipart.Parser(boundary, wrapper(open('tests/test1.txt'))),
+                digests):
             headers, data = part
             for header in headers:
                 print 'HEADER=' + str(header)
@@ -109,7 +121,11 @@ class TestMultipart(unittest.TestCase):
              '62250b57c1f145f2baf212df3dab4945',  # random6
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
-        for part, digest in zip(multipart.Parser('------------------------------8f9710048d91', open('tests/test1.txt')), digests):
+
+        boundary = '------------------------------8f9710048d91'
+        for part, digest in zip(multipart.Parser(boundary,
+                                                 open('tests/test1.txt')),
+                                digests):
             _, data = part
             chksum = hashlib.md5()
             for d in data:
@@ -129,7 +145,10 @@ class TestMultipart(unittest.TestCase):
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
         skip = False
-        for part, digest in zip(multipart.Parser('------------------------------8f9710048d91', open('tests/test1.txt')), digests):
+        boundary = '------------------------------8f9710048d91'
+        for part, digest in zip(multipart.Parser(boundary,
+                                                 open('tests/test1.txt')),
+                                digests):
             if skip:
                 skip = not Skip
                 continue
@@ -147,7 +166,10 @@ class TestMultipart(unittest.TestCase):
              'cd880b726e0a0dbd4237f10d15da46f4',
              '37b51d194a7513e45b56f6524f2d51f2']
         skip = False
-        for part, digest in zip(multipart.Parser('------------------------------6f84f6ecbb53', open('tests/test2.txt')), digests):
+        boundary = '------------------------------6f84f6ecbb53'
+        for part, digest in zip(multipart.Parser(boundary,
+                                                 open('tests/test2.txt')),
+                                digests):
             if skip:
                 skip = not Skip
                 continue
