@@ -72,7 +72,12 @@ class TestMultipart(unittest.TestCase):
 
         self.assertTrue(chksum.hexdigest() == digest)
 
-    def test_4(self):
+    def test_parse_stream_digest_data(self):
+
+        def wrapper(i):
+            for j in i.readlines():
+                yield j
+
         digests = \
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
@@ -86,17 +91,21 @@ class TestMultipart(unittest.TestCase):
 
         boundary = '------------------------------8f9710048d91'
         for part, digest in zip(
-                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
+                multipart.Parser(boundary,
+                                 wrapper(open('tests/fake_stream1.txt'))),
                 digests):
 
             _, data = part
             chksum = hashlib.md5()
+            length = 0
             for d in data:
                 chksum.update(d)
+                length += len(d)
 
-            self.assertTrue(chksum.hexdigest() == digest)
+            print('length: {}'.format(length))
+            self.assertEqual(chksum.hexdigest(), digest)
 
-    def test_parse_stream_digest_data(self):
+    def test_parse_stream_digest_data_randomly(self):
         random.seed(1)
 
         def wrapper(i):
@@ -134,9 +143,9 @@ class TestMultipart(unittest.TestCase):
                 length += len(d)
 
             print('length: {}'.format(length))
-            self.assertTrue(chksum.hexdigest() == digest)
+            self.assertEqual(chksum.hexdigest(), digest)
 
-    def test_5(self):
+    def test_check_parsed_digest_data_partially_fakestream1(self):
         digests = \
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
@@ -163,9 +172,9 @@ class TestMultipart(unittest.TestCase):
             for d in data:
                 chksum.update(d)
 
-            self.assertTrue(chksum.hexdigest() == digest)
+            self.assertEqual(chksum.hexdigest(), digest)
 
-    def test_6(self):
+    def test_check_parsed_digest_data_partially_fakestream2(self):
         digests = \
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              'cd880b726e0a0dbd4237f10d15da46f4',
