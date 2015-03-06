@@ -37,8 +37,9 @@ class TestMultipart(unittest.TestCase):
                     yield k
 
         boundary = '------------------------------75766a6a01a6'
-        for headers, data in multipart.Parser(boundary,
-                                              open('tests/fake_stream0.txt')):
+        for headers, data in multipart.Parser(
+                boundary,
+                wrapper(open('tests/fake_stream0.txt'))):
             for header in headers:
                 print('HEADER={}'.format(header))
 
@@ -57,8 +58,9 @@ class TestMultipart(unittest.TestCase):
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
         boundary = '------------------------------8f9710048d91'
-        for part, digest in zip(multipart.Parser(boundary,
-                                                 open('tests/fake_stream1.txt')), digests):
+        for part, digest in zip(multipart.Parser(
+                boundary,
+                open('tests/fake_stream1.txt')), digests):
             headers, data = part
             for header in headers:
                 print('HEADER={}'.format(str(header)))
@@ -123,9 +125,10 @@ class TestMultipart(unittest.TestCase):
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
 
         boundary = '------------------------------8f9710048d91'
-        for part, digest in zip(multipart.Parser(boundary,
-                                                 open('tests/fake_stream1.txt')),
-                                digests):
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
+                digests):
+
             _, data = part
             chksum = hashlib.md5()
             for d in data:
@@ -144,11 +147,13 @@ class TestMultipart(unittest.TestCase):
              '62250b57c1f145f2baf212df3dab4945',  # random6
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
+
         skip = False
         boundary = '------------------------------8f9710048d91'
-        for part, digest in zip(multipart.Parser(boundary,
-                                                 open('tests/fake_stream1.txt')),
-                                digests):
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
+                digests):
+
             if skip:
                 skip = not Skip
                 continue
@@ -165,11 +170,13 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              'cd880b726e0a0dbd4237f10d15da46f4',
              '37b51d194a7513e45b56f6524f2d51f2']
+
         skip = False
         boundary = '------------------------------6f84f6ecbb53'
-        for part, digest in zip(multipart.Parser(boundary,
-                                                 open('tests/fake_stream2.txt')),
-                                digests):
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream2.txt')),
+                digests):
+
             if skip:
                 skip = not Skip
                 continue
@@ -186,11 +193,13 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              'cd880b726e0a0dbd4237f10d15da46f4',
              '37b51d194a7513e45b56f6524f2d51f2']
+
         skip = False
         boundary = '------------------------------6f84f6ecbb53'
-        for part, digest in zip(multipart.Parser(boundary,
-                                                 open('tests/fake_stream3.txt')),
-                                digests):
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream3.txt')),
+                digests):
+
             if skip:
                 skip = not Skip
                 continue
