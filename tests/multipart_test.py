@@ -182,6 +182,27 @@ class TestMultipart(unittest.TestCase):
 
             self.assertTrue(chksum.hexdigest() == digest)
 
+    def test_multiline_headers(self):
+        digests = \
+            ['e3fb78474a477c528d92d01d4fc85a04',  # random0
+             'cd880b726e0a0dbd4237f10d15da46f4',
+             '37b51d194a7513e45b56f6524f2d51f2']
+        skip = False
+        boundary = '------------------------------6f84f6ecbb53'
+        for part, digest in zip(multipart.Parser(boundary,
+                                                 open('tests/fake_stream3.txt')),
+                                digests):
+            if skip:
+                skip = not Skip
+                continue
+
+            _, data = part
+            chksum = hashlib.md5()
+            for d in data:
+                chksum.update(d)
+
+            self.assertTrue(chksum.hexdigest() == digest)
+
 
 if __name__ == '__main__':
     unittest.main()
