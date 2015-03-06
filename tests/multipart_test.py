@@ -61,7 +61,7 @@ class TestMultipart(unittest.TestCase):
                                                  open('tests/fake_stream1.txt')), digests):
             headers, data = part
             for header in headers:
-                print 'HEADER=' + str(header)
+                print('HEADER={}'.format(str(header)))
 
             chksum = hashlib.md5()
             for d in data:
