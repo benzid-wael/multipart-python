@@ -18,7 +18,7 @@ class TestMultipart(unittest.TestCase):
         # This test ensures that a multipart parser was created successfully
         self.assertTrue(isinstance(parser, multipart.Parser))
 
-    def test_0(self):
+    def test_parse_file(self):
         boundary = '------------------------------75766a6a01a6'
         for headers, data in multipart.Parser(boundary,
                                               open('tests/fake_stream0.txt')):
@@ -29,7 +29,7 @@ class TestMultipart(unittest.TestCase):
             for d in data:
                 pass  # print 'LEN=' + str(len(d))
 
-    def test_1(self):
+    def test_parse_stream_file(self):
 
         def wrapper(i):
             for j in i:
@@ -46,7 +46,7 @@ class TestMultipart(unittest.TestCase):
             for d in data:
                 pass  # print 'LEN=' + str(len(d))
 
-    def test_3(self):
+    def test_parse_simple_digest_data(self):
         digests = \
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
@@ -58,9 +58,9 @@ class TestMultipart(unittest.TestCase):
              'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
              'b20b7cecab7ec5b610a3748431a78d34']  # random8
         boundary = '------------------------------8f9710048d91'
-        for part, digest in zip(multipart.Parser(
-                boundary,
-                open('tests/fake_stream1.txt')), digests):
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
+                digests):
             headers, data = part
             for header in headers:
                 print('HEADER={}'.format(str(header)))
@@ -72,7 +72,31 @@ class TestMultipart(unittest.TestCase):
 
         self.assertTrue(chksum.hexdigest() == digest)
 
-    def test_7(self):
+    def test_4(self):
+        digests = \
+            ['e3fb78474a477c528d92d01d4fc85a04',  # random0
+             '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
+             '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
+             '686c70dee5e998275508d88c0f3390c4',  # random3
+             '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
+             '74dbb0e2ffdab211004aff8a98c58906',  # random5
+             '62250b57c1f145f2baf212df3dab4945',  # random6
+             'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
+             'b20b7cecab7ec5b610a3748431a78d34']  # random8
+
+        boundary = '------------------------------8f9710048d91'
+        for part, digest in zip(
+                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
+                digests):
+
+            _, data = part
+            chksum = hashlib.md5()
+            for d in data:
+                chksum.update(d)
+
+            self.assertTrue(chksum.hexdigest() == digest)
+
+    def test_parse_stream_digest_data(self):
         random.seed(1)
 
         def wrapper(i):
@@ -110,30 +134,6 @@ class TestMultipart(unittest.TestCase):
                 length += len(d)
 
             print('length: {}'.format(length))
-            self.assertTrue(chksum.hexdigest() == digest)
-
-    def test_4(self):
-        digests = \
-            ['e3fb78474a477c528d92d01d4fc85a04',  # random0
-             '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
-             '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
-             '686c70dee5e998275508d88c0f3390c4',  # random3
-             '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
-             '74dbb0e2ffdab211004aff8a98c58906',  # random5
-             '62250b57c1f145f2baf212df3dab4945',  # random6
-             'de542ac70dd1f67d9b2b8fb25004d23d',  # random7
-             'b20b7cecab7ec5b610a3748431a78d34']  # random8
-
-        boundary = '------------------------------8f9710048d91'
-        for part, digest in zip(
-                multipart.Parser(boundary, open('tests/fake_stream1.txt')),
-                digests):
-
-            _, data = part
-            chksum = hashlib.md5()
-            for d in data:
-                chksum.update(d)
-
             self.assertTrue(chksum.hexdigest() == digest)
 
     def test_5(self):
