@@ -8,16 +8,15 @@ import random
 
 class TestMultipart(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
     def test_badConstruction(self):
         self.assertRaises(TypeError, multipart.Parser)
         self.assertRaises(TypeError, multipart.Parser, 'foo')
         self.assertRaises(TypeError, multipart.Generator)
 
     def test_create(self):
-        multipart.Parser('x', [])
+        parser = multipart.Parser('x', '')
+        # This test ensures that a multipart parser was created successfully
+        self.assertTrue(isinstance(parser, multipart.Parser))
 
     def test_0(self):
         boundary = '------------------------------75766a6a01a6'
