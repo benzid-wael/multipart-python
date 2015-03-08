@@ -225,27 +225,22 @@ class TestMultipart(unittest.TestCase):
             self.assertTrue(chksum.hexdigest() == digest)
 
     def test_multiline_headers(self):
-        digests = \
-            ['e3fb78474a477c528d92d01d4fc85a04',  # random0
-             'cd880b726e0a0dbd4237f10d15da46f4',
-             '37b51d194a7513e45b56f6524f2d51f2']
+        expected_content = (
+            ([('Content-Disposition', 'form-data; name="first_name"')], 'john'),
+            ([('Content-Disposition', 'form-data; name="last_name"')], 'Doe'),
+            ([('Content-Disposition', 'form-data; name="cv"; filename="cv.txt"'),
+                ('Content-Type', 'text/plain;\n\tcharset="utf-8"')], 'John Doe\'s CV'),
+        )
+        boundary = '--faKe_BoundaRy'
+        for part, expected in zip(
+                multipart.Parser(boundary, open('tests/fake_stream4.txt')),
+                expected_content):
 
-        skip = False
-        boundary = '------------------------------6f84f6ecbb53'
-        for part, digest in zip(
-                multipart.Parser(boundary, open('tests/fake_stream2.txt')),
-                digests):
-
-            if skip:
-                skip = not Skip
-                continue
-
-            _, data = part
-            chksum = hashlib.md5()
-            for d in data:
-                chksum.update(d)
-
-            self.assertTrue(chksum.hexdigest() == digest)
+            headers, data = part
+            for i, header in enumerate(headers):
+                assert header == expected[0][i]
+            raw_data = ''.join([d for d in data])
+            assert raw_data == expected[1]
 
 
 if __name__ == '__main__':
