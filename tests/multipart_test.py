@@ -70,7 +70,7 @@ class TestMultipart(unittest.TestCase):
                 # print 'LEN=' + str(len(d))
                 chksum.update(d)
 
-        self.assertTrue(chksum.hexdigest() == digest)
+            self.assertTrue(chksum.hexdigest() == digest)
 
     def test_parse_stream_digest_data(self):
 
@@ -104,6 +104,30 @@ class TestMultipart(unittest.TestCase):
 
             print('length: {}'.format(length))
             self.assertEqual(chksum.hexdigest(), digest)
+
+    def test_parse_simple_slow_stream_data(self):
+
+        def wrapper(stream):
+            for iterator in stream:
+                for bit in iterator:
+                    yield bit
+
+        boundary = "-------------------------------faKe_BoundaRy"
+        expected = (
+            "john",
+            "Doe",
+            "21",
+            "John Doe's CV"
+        )
+        for part, expected_data in zip(
+                multipart.Parser(
+                    boundary, wrapper(open('tests/fake_stream3.txt'))),
+                expected):
+            headers, data = part
+            for header in headers:
+                print('HEADER={}'.format(header))
+            raw_data = ''.join([d for d in data])
+            assert raw_data == expected_data
 
     def test_parse_stream_digest_data_randomly(self):
         random.seed(1)
@@ -206,7 +230,7 @@ class TestMultipart(unittest.TestCase):
         skip = False
         boundary = '------------------------------6f84f6ecbb53'
         for part, digest in zip(
-                multipart.Parser(boundary, open('tests/fake_stream3.txt')),
+                multipart.Parser(boundary, open('tests/fake_stream2.txt')),
                 digests):
 
             if skip:
