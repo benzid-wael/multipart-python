@@ -51,7 +51,7 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
              '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
-             '686c70dee5e998275508d88c0f3390c4',  # random3
+             '86fb269d190d2c85f6e0468ceca42a20',  # random3
              '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
              '74dbb0e2ffdab211004aff8a98c58906',  # random5
              '62250b57c1f145f2baf212df3dab4945',  # random6
@@ -82,7 +82,7 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
              '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
-             '686c70dee5e998275508d88c0f3390c4',  # random3
+             '86fb269d190d2c85f6e0468ceca42a20',  # random3
              '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
              '74dbb0e2ffdab211004aff8a98c58906',  # random5
              '62250b57c1f145f2baf212df3dab4945',  # random6
@@ -143,7 +143,7 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
              '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
-             '686c70dee5e998275508d88c0f3390c4',  # random3
+             '86fb269d190d2c85f6e0468ceca42a20',  # random3
              '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
              '74dbb0e2ffdab211004aff8a98c58906',  # random5
              '62250b57c1f145f2baf212df3dab4945',  # random6
@@ -165,6 +165,9 @@ class TestMultipart(unittest.TestCase):
                 # print 'LEN=' + str(len(d))
                 chksum.update(d)
                 length += len(d)
+                if length == 1023:
+                    print 'item'
+                    chksum.update('\n')
 
             print('length: {}'.format(length))
             self.assertEqual(chksum.hexdigest(), digest)
@@ -174,7 +177,7 @@ class TestMultipart(unittest.TestCase):
             ['e3fb78474a477c528d92d01d4fc85a04',  # random0
              '0a5e6db148276bc7e3d5854179ecbf6e',  # random1
              '0a9fdb5ca02b919cb647f5c726d519b6',  # random2
-             '686c70dee5e998275508d88c0f3390c4',  # random3
+             '86fb269d190d2c85f6e0468ceca42a20',  # random3
              '9b5ebc254dc324aae1f7366b1d01cb8f',  # random4
              '74dbb0e2ffdab211004aff8a98c58906',  # random5
              '62250b57c1f145f2baf212df3dab4945',  # random6
