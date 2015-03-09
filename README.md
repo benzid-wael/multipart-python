@@ -14,4 +14,12 @@ each part to disk is shown in `example/saveUpload.py`. It starts
 an HTTP server on port 8080 of the localhost that saves all parts of the
 multipart upload to separate files on disk.
 
-				
+
+## Features
+
+* No dependencies
+* Fast: written in C
+* Works with chunks of data
+* Support of multi-line headers
+* Uploads of unknown size (missing Content-Length header).
+* Very high test coverage
