@@ -1,4 +1,4 @@
-## Multipart form data parser for python
+# Python multipart form data parser
 
 A python module of [Igor Afonov's](http://iafonov.github.com) [multipart-parser-c](https://github.com/iafonov/multipart-parser-c).
 
