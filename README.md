@@ -29,3 +29,9 @@ multipart upload to separate files on disk.
 * Fast: parsing algorithm written in c
 * Reads directly from a socket (no .readline(n), just .read(n)).
 * Is desgined for WSGI, not CGI.
+
+## TODO
+* Support of Python 3
+* Handle big uploads properly
+* Provide a high level API
+* Add some utility for WSGI
