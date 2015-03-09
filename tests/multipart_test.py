@@ -191,7 +191,7 @@ class TestMultipart(unittest.TestCase):
                 digests):
 
             if skip:
-                skip = not Skip
+                skip = not skip
                 continue
 
             _, data = part
@@ -214,7 +214,7 @@ class TestMultipart(unittest.TestCase):
                 digests):
 
             if skip:
-                skip = not Skip
+                skip = not skip
                 continue
 
             _, data = part
