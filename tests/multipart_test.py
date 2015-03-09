@@ -226,10 +226,13 @@ class TestMultipart(unittest.TestCase):
 
     def test_multiline_headers(self):
         expected_content = (
-            ([('Content-Disposition', 'form-data; name="first_name"')], 'john'),
+            ([('Content-Disposition', 'form-data; name="first_name"')],
+             'john'),
             ([('Content-Disposition', 'form-data; name="last_name"')], 'Doe'),
-            ([('Content-Disposition', 'form-data; name="cv"; filename="cv.txt"'),
-                ('Content-Type', 'text/plain;\n\tcharset="utf-8"')], 'John Doe\'s CV'),
+            ([('Content-Disposition',
+               'form-data; name="cv"; filename="cv.txt"'),
+              ('Content-Type', 'text/plain;\n\tcharset="utf-8"')],
+             'John Doe\'s CV'),
         )
         boundary = '--faKe_BoundaRy'
         for part, expected in zip(
