@@ -23,3 +23,9 @@ multipart upload to separate files on disk.
 * Support of multi-line headers
 * Uploads of unknown size (missing Content-Length header).
 * Very high test coverage
+
+## Compared to cgi.FieldStorage()
+
+* Fast: parsing algorithm written in c
+* Reads directly from a socket (no .readline(n), just .read(n)).
+* Is desgined for WSGI, not CGI.
