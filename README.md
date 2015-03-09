@@ -24,12 +24,6 @@ implemented in Python code only.
 * Reads directly from a socket (no .readline(n), just .read(n)).
 * Is desgined for WSGI, not CGI.
 
-## TODO
-* Support of Python 3
-* Handle big uploads properly
-* Provide a high level API
-* Add some utility for WSGI
-
 ## Example
 
 Example usage of parsing a POST request and saving each part to disk is
@@ -37,5 +31,8 @@ shown in `example/saveUpload.py`. It starts an HTTP server on port 8080
 of the localhost that saves all parts of the multipart upload to separate
 files on disk.
 
-
-
+## TODO
+* Support of Python 3
+* Handle big uploads properly
+* Provide a high level API
+* Add some utility for WSGI
