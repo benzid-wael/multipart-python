@@ -36,7 +36,3 @@ files on disk.
 * Handle big uploads properly
 * Provide a high level API
 * Add some utility for WSGI
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/benzid-wael/multipart-python/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
